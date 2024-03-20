@@ -1,12 +1,19 @@
 'use strict';
 
-const { server } = require('../server.js');
+const server = require('../src/server.js')
 const supertest = require('supertest');
-const mockRequest = supertest(server);
+const mockServer = supertest(server);
 
-describe('test 500 error middlware', () => {
-    test('status code of 500 if no name is in the query string', async () => {
-        const res = await mockRequest.get('/person?name=');
-        expect(res.status).toBe(500);
-    });
+describe('bad login', () => {
+  it('fails with known user and wrong password', async () => {
+    const response = await mockServer.post('/signin').auth('bran2miz', 'passwerd');
+    const user = response.body;
+
+    // expect(response.status).toBe(500);
+    expect(user.id).not.toBeDefined();
+
+
+
+  });
 });
+

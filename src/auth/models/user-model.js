@@ -1,19 +1,19 @@
-'use strict';
+// 'use strict';
 
-const userModel= (sequelizeDatabase, DataTypes) => sequelizeDatabase.define('users', {
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type:DataTypes.STRING,
-    allowNull: false,
-  }
-});
-
-// userModel.beforeCreate((user) => {
-//   console.log("this is the user I am about to create", user)
+// const userModel= (sequelizeDatabase, DataTypes) => sequelizeDatabase.define('user', {
+//   username: {
+//     type: DataTypes.STRING,
+//     allowNull: false,
+//     unique: true,
+//   },
+//   password: {
+//     type:DataTypes.STRING,
+//     allowNull: false,
+//   }
 // });
 
-module.exports = userModel;
+// // userModel.beforeCreate((user) => {
+// //   console.log("this is the user I am about to create", user)
+// // });
+
+// module.exports = userModel;

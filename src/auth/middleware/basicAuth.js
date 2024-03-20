@@ -3,47 +3,41 @@
 const bcrypt = require('bcrypt');
 const base64 = require('base-64');
 // curly brackets means it will come in as an object
-const { userModel } = require('../models');
+const { userModel } = require('../models/index.js');
 
-const basicAuth = async(req, res, next) => {
-  let { authorization } = req.headers;
-  // looks like this in headers: Basic eafjawiwefawe
-  // looks likes this when using split method: ["Basic", "eafjawiwefawe"]
+const basicAuth = async (req, res, next) => {
+  let basicHeaderParts = req.headers.authorization.split(' '); // ['Basic', 'am9objpmb28=']
+  let encodedString = basicHeaderParts.pop(); // am9objpmb28=
+  let decodedString = base64.decode(encodedString); // "username:password"
+  let [username, password] = decodedString.split(':'); // username, password
 
-
-  // split Basic away from the encoded part
-  // split method splits the str into an array - the string is broken off into separate elements delinated by the value in the argument. 
-  let encodedStr = authorization.split(" ")[1];
-
-  console.log("separated encoded string: ",encodedStr)
-
-  // now we decode the encoded string 
-  let decodedStr = base64.decode(encodedStr);
-  // username:password
-  // ["username", "password"]
-
-  const [username, password] = decodedStr.split(":");
-
-  console.log('username and password', {username, password})
-
-  // find the model where the username matches
-
-  let user = await userModel.findOne({where: {username}})
-  console.log("I found the user: ". user);
-
-  if (!user) {
-    next('Not Authorized, no account exists');
-    // return?
-  }
-  // compare the password to the encrypted password saved in the user we get back
-  let isValid = await bcrypt.compare(password, user.password);
-
-  if (isValid) {
-    req.user = user;
-    next();
-  } else {
-    next('Not Authorized, password incorrect');
-  }
+  /*
+        Now that we finally have username and password, let's see if it's valid
+        1. Find the user in the database by username
+        2. Compare the plaintext password we now have against the encrypted password in the db
+           - bcrypt does this by re-encrypting the plaintext password and comparing THAT
+        3. Either we're valid or we throw an error
+      */
+  try {
+    const user = await userModel.findOne({ where: { username: username } });
+    const valid = await bcrypt.compare(password, user.password);
+    if (valid) {
+      // if I have a valid user attach the user to the request
+      // send the next()
+      req.user = user;
+      next();
+      // res.status(200).json(user);
+    } else {
+      throw new Error('Invalid User');
+    }
+  } catch (error) {
+    //TODO
+    // send the error message as next("error message");
+    // write error handling middleware
+    res.status(403).send('Invalid Login');
 }
+
+}
+
 
 module.exports = basicAuth;
